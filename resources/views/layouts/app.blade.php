@@ -774,6 +774,81 @@
                 transform: translateY(0);
             }
         }
+
+        /* Toast Notifications */
+        .rdn-toast-container {
+            position: fixed;
+            top: 100px;
+            right: 30px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+        }
+        
+        .rdn-toast {
+            background-color: #111111;
+            color: #ffffff;
+            border-left: 4px solid var(--rdn-turquoise);
+            padding: 16px 20px;
+            min-width: 300px;
+            max-width: 420px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: toastSlideIn 0.3s ease-out forwards;
+            pointer-events: auto;
+            border-radius: 0;
+        }
+        
+        .rdn-toast.toast-error {
+            border-left-color: #ff334b;
+        }
+
+        .rdn-toast .toast-close {
+            background: none;
+            border: none;
+            color: #ffffff;
+            opacity: 0.5;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0 0 0 15px;
+            line-height: 1;
+            transition: opacity 0.2s;
+        }
+        
+        .rdn-toast .toast-close:hover {
+            opacity: 1;
+        }
+        
+        @keyframes toastSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes toastFadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-15px);
+            }
+        }
     </style>
 </head>
 <body>
@@ -783,22 +858,37 @@
         RDN CUSTOM JERSEY - CETAK DESAIN CUSTOM TANPA MINIMUM ORDER. MULAI DARI 1 PCS!
     </div>
 
-    <!-- Session Alerts -->
-    @if(session('success'))
+    <!-- Session Alerts (Logout Success - Static Banner) -->
+    @if(session('logout_success'))
         <div class="alert alert-success alert-dismissible fade show border-0 rounded-0 text-center m-0 py-2 d-flex justify-content-center align-items-center" role="alert" style="background-color: #e8f9f9; color: #0c7475; font-size: 0.85rem; font-family: var(--font-display); font-weight: 600;">
             <i class="bi bi-check-circle-fill me-2"></i>
-            {{ session('success') }}
+            {{ session('logout_success') }}
             <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show border-0 rounded-0 text-center m-0 py-2 d-flex justify-content-center align-items-center" role="alert" style="background-color: #fdf2f2; color: #9b1c1c; font-size: 0.85rem; font-family: var(--font-display); font-weight: 600;">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-            {{ session('error') }}
-            <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
+    <!-- Toast Notifications Container -->
+    <div class="rdn-toast-container">
+        @if(session('success'))
+            <div class="rdn-toast" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill text-turquoise me-3 fs-5"></i>
+                    <span>{{ session('success') }}</span>
+                </div>
+                <button type="button" class="toast-close" aria-label="Close"><i class="bi bi-x"></i></button>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="rdn-toast toast-error" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-exclamation-triangle-fill text-danger me-3 fs-5"></i>
+                    <span>{{ session('error') }}</span>
+                </div>
+                <button type="button" class="toast-close" aria-label="Close"><i class="bi bi-x"></i></button>
+            </div>
+        @endif
+    </div>
 
     <!-- Navbar Component -->
     @include('layouts.partials.navbar')
@@ -814,7 +904,7 @@
     <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Custom Scroll Header Script -->
+    <!-- Custom Scroll Header & Toast Auto-Dismiss Script -->
     <script>
         window.addEventListener('scroll', function() {
             var header = document.getElementById('mainHeader');
@@ -822,6 +912,34 @@
                 header.classList.add('scrolled');
             } else {
                 header.classList.remove('scrolled');
+            }
+        });
+
+        // Toast functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const toasts = document.querySelectorAll('.rdn-toast');
+            toasts.forEach(toast => {
+                // Auto dismiss after 4 seconds
+                setTimeout(() => {
+                    dismissToast(toast);
+                }, 4000);
+                
+                // Manual close click
+                const closeBtn = toast.querySelector('.toast-close');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => {
+                        dismissToast(toast);
+                    });
+                }
+            });
+
+            function dismissToast(toast) {
+                if (toast.parentNode) {
+                    toast.style.animation = 'toastFadeOut 0.4s ease-out forwards';
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 400);
+                }
             }
         });
     </script>

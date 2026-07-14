@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
+use App\Models\Role;
 
 class AuthController extends Controller
 {
@@ -109,6 +112,49 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/')
-            ->with('success', 'Anda telah berhasil keluar dari sistem.');
+            ->with('logout_success', 'Anda telah berhasil keluar dari sistem.');
+    }
+
+    /**
+     * Show customer registration form.
+     */
+    public function showRegistrationForm()
+    {
+        if (Auth::check()) {
+            return redirect('/');
+        }
+        return view('auth.register');
+    }
+
+    /**
+     * Handle customer registration.
+     */
+    public function register(Request $request)
+    {
+        $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'nullable|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        // Get default customer role
+        $customerRole = Role::where('name', 'customer')->first();
+
+        // Create user
+        $user = User::create([
+            'name' => trim($request->first_name . ' ' . ($request->last_name ?? '')),
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role_id' => $customerRole ? $customerRole->id : null,
+        ]);
+
+        // Log user in
+        Auth::login($user);
+
+        $request->session()->regenerate();
+
+        return redirect('/')
+            ->with('success', 'Registrasi berhasil! Selamat datang di RDN Bikes.');
     }
 }

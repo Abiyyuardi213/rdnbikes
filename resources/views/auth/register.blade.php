@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login Pelanggan - RDN Bikes</title>
+    <title>Registrasi Pelanggan - RDN Bikes</title>
     
     <!-- Favicon -->
     <link rel="shortcut icon" href="https://subjersey.com/cdn/shop/files/Frame_1_5_32x32.png?v=1660193625" type="image/png">
@@ -36,15 +36,15 @@
             align-items: center;
             justify-content: center;
             color: #333333;
-            padding: 20px 0;
+            padding: 40px 0;
         }
 
-        .login-container {
+        .register-container {
             width: 100%;
-            max-width: 440px;
+            max-width: 480px;
         }
 
-        .card-login {
+        .card-register {
             background-color: #ffffff;
             border: 1px solid #ebebeb;
             border-radius: 0;
@@ -138,7 +138,7 @@
 </head>
 <body>
 
-    <div class="login-container">
+    <div class="register-container">
         <!-- Back to shop link -->
         <div class="mb-4 text-start">
             <a href="/" class="back-to-shop">
@@ -146,31 +146,15 @@
             </a>
         </div>
 
-        <div class="card-login text-center">
+        <div class="card-register text-center">
             <!-- Logo -->
             <a href="/" class="brand-logo">
                 RDN<span class="accent">BIKES</span>
             </a>
             
-            <h5 class="mb-4 display-font text-uppercase" style="font-size: 1rem; letter-spacing: 1px; color: #666666;">Login Pelanggan</h5>
+            <h5 class="mb-4 display-font text-uppercase" style="font-size: 1rem; letter-spacing: 1px; color: #666666;">Daftar Akun Baru</h5>
 
-            <!-- Flash Session Alerts -->
-            @if(session('success'))
-                <div class="alert alert-success alert-custom alert-dismissible fade show text-start mb-4" role="alert">
-                    <i class="bi bi-check-circle-fill me-2"></i>
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            @if(session('error'))
-                <div class="alert alert-danger alert-custom alert-dismissible fade show text-start mb-4" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    {{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
+            <!-- Error Alerts -->
             @if($errors->any())
                 <div class="alert alert-danger alert-custom text-start mb-4">
                     <ul class="mb-0 ps-3">
@@ -181,50 +165,77 @@
                 </div>
             @endif
 
-            <!-- Login Form -->
-            <form action="{{ route('login') }}" method="POST">
+            <!-- Registration Form -->
+            <form action="{{ route('register') }}" method="POST">
                 @csrf
+                
+                <div class="row">
+                    <!-- First Name Field -->
+                    <div class="col-md-6 mb-3 text-start">
+                        <label for="first_name" class="form-label form-label-custom">Nama Depan <span class="text-danger">*</span></label>
+                        <input type="text" 
+                               name="first_name" 
+                               id="first_name" 
+                               class="form-control form-control-custom" 
+                               placeholder="Contoh: Abiyyu" 
+                               value="{{ old('first_name') }}" 
+                               required 
+                               autofocus>
+                    </div>
+
+                    <!-- Last Name Field -->
+                    <div class="col-md-6 mb-3 text-start">
+                        <label for="last_name" class="form-label form-label-custom">Nama Belakang</label>
+                        <input type="text" 
+                               name="last_name" 
+                               id="last_name" 
+                               class="form-control form-control-custom" 
+                               placeholder="Contoh: Ardi" 
+                               value="{{ old('last_name') }}">
+                    </div>
+                </div>
                 
                 <!-- Email Field -->
                 <div class="mb-3 text-start">
-                    <label for="email" class="form-label form-label-custom">Alamat Email</label>
+                    <label for="email" class="form-label form-label-custom">Alamat Email <span class="text-danger">*</span></label>
                     <input type="email" 
                            name="email" 
                            id="email" 
                            class="form-control form-control-custom" 
                            placeholder="email@example.com" 
                            value="{{ old('email') }}" 
-                           required 
-                           autofocus>
+                           required>
                 </div>
                 
                 <!-- Password Field -->
-                <div class="mb-4 text-start">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <label for="password" class="form-label form-label-custom mb-0">Password</label>
-                        <a href="#" class="text-decoration-none text-muted" style="font-size: 0.75rem;">Lupa Password?</a>
-                    </div>
+                <div class="mb-3 text-start">
+                    <label for="password" class="form-label form-label-custom">Password <span class="text-danger">*</span></label>
                     <input type="password" 
                            name="password" 
                            id="password" 
                            class="form-control form-control-custom" 
-                           placeholder="Masukkan password Anda" 
+                           placeholder="Minimal 6 karakter" 
+                           required>
+                </div>
+
+                <!-- Confirm Password Field -->
+                <div class="mb-4 text-start">
+                    <label for="password_confirmation" class="form-label form-label-custom">Konfirmasi Password <span class="text-danger">*</span></label>
+                    <input type="password" 
+                           name="password_confirmation" 
+                           id="password_confirmation" 
+                           class="form-control form-control-custom" 
+                           placeholder="Ulangi password Anda" 
                            required>
                 </div>
                 
-                <!-- Remember Me Checkbox -->
-                <div class="mb-4 text-start d-flex align-items-center">
-                    <input type="checkbox" name="remember" id="remember" class="form-check-input me-2" style="border-radius: 0; cursor: pointer;" {{ old('remember') ? 'checked' : '' }}>
-                    <label for="remember" class="form-check-label text-muted" style="font-size: 0.85rem; cursor: pointer; user-select: none;">Ingat saya di perangkat ini</label>
-                </div>
-                
                 <!-- Submit Button -->
-                <button type="submit" class="btn btn-turquoise mb-4"><i class="bi bi-box-arrow-in-right me-2"></i> Masuk Akun</button>
+                <button type="submit" class="btn btn-turquoise mb-4"><i class="bi bi-person-plus-fill me-2"></i> Buat Akun Sekarang</button>
             </form>
             
             <hr class="my-4">
             
-            <p class="text-muted mb-0" style="font-size: 0.85rem;">Belum memiliki akun? <a href="{{ route('register') }}" class="text-decoration-none text-dark fw-bold">Daftar Sekarang</a></p>
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">Sudah memiliki akun? <a href="{{ route('login') }}" class="text-decoration-none text-dark fw-bold">Masuk Sekarang</a></p>
         </div>
     </div>
 

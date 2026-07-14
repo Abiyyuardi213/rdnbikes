@@ -61,6 +61,25 @@
             flex-direction: column;
             justify-content: space-between;
             padding: 30px 0;
+            overflow-y: auto;
+        }
+
+        /* Custom Scrollbar for Sidebar */
+        .sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: var(--rdn-turquoise);
         }
 
         .sidebar-brand {
@@ -150,6 +169,10 @@
             background-color: #ffffff;
             border-bottom: 1px solid var(--rdn-border-color);
             padding: 15px 30px;
+            position: sticky;
+            top: 0;
+            z-index: 99;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
         }
 
         .admin-navbar .navbar-title {
@@ -363,6 +386,81 @@
                 margin-left: 0;
             }
         }
+
+        /* Toast Notifications */
+        .rdn-toast-container {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+        }
+        
+        .rdn-toast {
+            background-color: #111111;
+            color: #ffffff;
+            border-left: 4px solid var(--rdn-turquoise);
+            padding: 16px 20px;
+            min-width: 300px;
+            max-width: 420px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: toastSlideIn 0.3s ease-out forwards;
+            pointer-events: auto;
+            border-radius: 0;
+        }
+        
+        .rdn-toast.toast-error {
+            border-left-color: #ff334b;
+        }
+
+        .rdn-toast .toast-close {
+            background: none;
+            border: none;
+            color: #ffffff;
+            opacity: 0.5;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0 0 0 15px;
+            line-height: 1;
+            transition: opacity 0.2s;
+        }
+        
+        .rdn-toast .toast-close:hover {
+            opacity: 1;
+        }
+        
+        @keyframes toastSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes toastFadeOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-15px);
+            }
+        }
     </style>
 </head>
 <body>
@@ -395,8 +493,28 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="">
+                    <a href="{{ route('admin.categories.index') }}" class="{{ Route::is('admin.categories.*') ? 'active' : '' }}">
+                        <i class="bi bi-tags"></i> Kategori Produk
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.products.index') }}" class="{{ Route::is('admin.products.*') ? 'active' : '' }}">
                         <i class="bi bi-bicycle"></i> Produk Sepeda
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.apparel.index') }}" class="{{ Route::is('admin.apparel.*') ? 'active' : '' }}">
+                        <i class="bi bi-bag"></i> Produk Apparel
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.components.index') }}" class="{{ Route::is('admin.components.*') ? 'active' : '' }}">
+                        <i class="bi bi-wrench"></i> Komponen Sepeda
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.stocks.index') }}" class="{{ Route::is('admin.stocks.*') ? 'active' : '' }}">
+                        <i class="bi bi-box-seam"></i> Stok & Varian
                     </a>
                 </li>
                 <li>
@@ -444,7 +562,7 @@
                         <li><a class="dropdown-item py-2" href="#" style="font-size: 0.85rem; font-weight: 600;"><i class="bi bi-gear me-2"></i> Pengaturan Akun</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
-                            <a class="dropdown-item py-2 text-danger" href="#" onclick="event.preventDefault(); document.getElementById('logoutFormAdmin').submit();" style="font-size: 0.85rem; font-weight: 600;">
+                            <a class="dropdown-item py-2 text-danger" href="#" data-bs-toggle="modal" data-bs-target="#logoutConfirmModalAdmin" style="font-size: 0.85rem; font-weight: 600;">
                                 <i class="bi bi-box-arrow-right me-2"></i> Keluar
                             </a>
                             <form id="logoutFormAdmin" action="{{ route('logout') }}" method="POST" class="d-none">
@@ -459,26 +577,28 @@
         <!-- Main Content Area -->
         <main class="admin-content">
             
-            <!-- Success/Error Session Alerts -->
-            @if(session('success'))
-                <div class="alert alert-success-custom alert-dismissible fade show border-start border-4 border-success d-flex align-items-center mb-4" role="alert">
-                    <i class="bi bi-check-circle-fill me-3 fs-5"></i>
-                    <div>
-                        {{ session('success') }}
+            <!-- Toast Notifications Container -->
+            <div class="rdn-toast-container">
+                @if(session('success'))
+                    <div class="rdn-toast" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-check-circle-fill text-turquoise me-3 fs-5"></i>
+                            <span>{{ session('success') }}</span>
+                        </div>
+                        <button type="button" class="toast-close" aria-label="Close"><i class="bi bi-x"></i></button>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
+                @endif
 
-            @if(session('error'))
-                <div class="alert alert-danger-custom alert-dismissible fade show border-start border-4 border-danger d-flex align-items-center mb-4" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill me-3 fs-5"></i>
-                    <div>
-                        {{ session('error') }}
+                @if(session('error'))
+                    <div class="rdn-toast toast-error" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-exclamation-triangle-fill text-danger me-3 fs-5"></i>
+                            <span>{{ session('error') }}</span>
+                        </div>
+                        <button type="button" class="toast-close" aria-label="Close"><i class="bi bi-x"></i></button>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
+                @endif
+            </div>
 
             @yield('content')
         </main>
@@ -487,12 +607,59 @@
     <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Sidebar Toggle Script -->
+    <!-- Sidebar Toggle & Toast Auto-Dismiss Script -->
     <script>
         function toggleSidebar() {
             var sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('active');
         }
+
+        // Toast functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const toasts = document.querySelectorAll('.rdn-toast');
+            toasts.forEach(toast => {
+                // Auto dismiss after 4 seconds
+                setTimeout(() => {
+                    dismissToast(toast);
+                }, 4000);
+                
+                // Manual close click
+                const closeBtn = toast.querySelector('.toast-close');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => {
+                        dismissToast(toast);
+                    });
+                }
+            });
+
+            function dismissToast(toast) {
+                if (toast.parentNode) {
+                    toast.style.animation = 'toastFadeOut 0.4s ease-out forwards';
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 400);
+                }
+            }
+        });
     </script>
+
+    <!-- Logout Confirmation Modal (Admin) -->
+    <div class="modal fade" id="logoutConfirmModalAdmin" tabindex="-1" aria-labelledby="logoutConfirmModalAdminLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-0 border-0 shadow-lg" style="background-color: #ffffff;">
+                <div class="modal-header border-0 bg-dark text-white rounded-0 py-3">
+                    <h5 class="modal-title text-uppercase fw-bold mb-0" id="logoutConfirmModalAdminLabel" style="font-family: var(--font-display); font-size: 0.95rem; letter-spacing: 1px;"><i class="bi bi-box-arrow-right text-turquoise me-2"></i> Konfirmasi Keluar Admin</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4 text-center">
+                    <p class="mb-0 text-muted" style="font-size: 0.95rem; line-height: 1.6;">Apakah Anda yakin ingin keluar dari Panel Administrator RDN Bikes?</p>
+                </div>
+                <div class="modal-footer border-0 pt-0 pb-4 d-flex justify-content-center gap-2">
+                    <button type="button" class="btn btn-outline-dark rounded-0 px-4 py-2 text-uppercase fw-bold" data-bs-dismiss="modal" style="font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 1px;">Batal</button>
+                    <button type="button" class="btn btn-turquoise rounded-0 px-4 py-2 text-uppercase fw-bold" onclick="event.preventDefault(); document.getElementById('logoutFormAdmin').submit();" style="font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 1px;">Ya, Keluar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
